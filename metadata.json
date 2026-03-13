@@ -1,0 +1,8 @@
+{
+  "name": "BharatResume Universal Builder",
+  "description": "An inclusive, multi-modal resume builder for the Indian workforce. Create professional resumes via voice, chat, or forms using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
