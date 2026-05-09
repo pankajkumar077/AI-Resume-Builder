@@ -27,6 +27,18 @@
 
 ---
 
+## 📸 Screenshots
+
+| Dashboard | AI Assistant ("Sahayak") |
+| :---: | :---: |
+| ![Dashboard](./screenshots/dashboard.png) | ![AI Assistant](./screenshots/chat.png) |
+
+| Template Selection | Editor & Preview |
+| :---: | :---: |
+| ![Templates](./screenshots/templates.png) | ![Editor](./screenshots/editor.png) |
+
+---
+
 ## 🏗️ Cloud & DevOps Architecture (AWS)
 
 This project is architected as a definitive showcase of **Senior Cloud & DevOps Architecture**, utilizing Infrastructure as Code (IaC) and automated delivery.
