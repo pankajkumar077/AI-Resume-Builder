@@ -21,10 +21,18 @@ export interface Education {
   year: string;
 }
 
+export enum ResumeTemplate {
+  MODERN = 'MODERN',
+  CLASSIC = 'CLASSIC',
+  MINIMALIST = 'MINIMALIST',
+  PROFESSIONAL = 'PROFESSIONAL'
+}
+
 export interface ResumeData {
   id: string;
   versionName: string;
   updatedAt: number;
+  templateId: ResumeTemplate;
   personalInfo: PersonalInfo;
   experience: Experience[];
   education: Education[];
@@ -36,7 +44,8 @@ export interface ResumeData {
 export enum AppView {
   DASHBOARD = 'DASHBOARD',
   EDITOR = 'EDITOR',
-  PREVIEW = 'PREVIEW'
+  PREVIEW = 'PREVIEW',
+  TEMPLATES = 'TEMPLATES'
 }
 
 export interface ChatMessage {

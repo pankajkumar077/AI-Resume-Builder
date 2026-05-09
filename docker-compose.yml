@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Pass environment variables at build time if needed locally
+        - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
+        - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
+    image: ai-resume-builder-frontend:latest
+    container_name: ai-resume-builder-app
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+# Note: If a backend service (e.g., Node.js API) is added later, 
+# it can be configured below. Currently, the app communicates directly 
+# with external AI APIs.
+#
+#   backend:
+#     build: ./backend
+#     image: ai-resume-builder-api:latest
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - NODE_ENV=production
+#     networks:
+#       - app-network
+
+networks:
+  app-network:
+    driver: bridge

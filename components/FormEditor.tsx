@@ -9,7 +9,7 @@ interface Props {
 
 export const FormEditor: React.FC<Props> = ({ data, onChange }) => {
   
-  const updateInfo = (field: string, value: string) => {
+  const updateInfo = (field: keyof ResumeData['personalInfo'], value: string) => {
     onChange({
       ...data,
       personalInfo: { ...data.personalInfo, [field]: value }
@@ -23,10 +23,9 @@ export const FormEditor: React.FC<Props> = ({ data, onChange }) => {
     });
   };
 
-  const updateExperience = (index: number, field: string, value: string) => {
+  const updateExperience = (index: number, field: keyof ResumeData['experience'][number], value: string) => {
     const newExp = [...data.experience];
-    // @ts-ignore
-    newExp[index][field] = value;
+    newExp[index] = { ...newExp[index], [field]: value };
     onChange({ ...data, experience: newExp });
   };
 
@@ -48,6 +47,39 @@ export const FormEditor: React.FC<Props> = ({ data, onChange }) => {
   const removeSkill = (index: number) => {
     const newSkills = data.skills.filter((_, i) => i !== index);
     onChange({ ...data, skills: newSkills });
+  };
+
+  const addEducation = () => {
+    onChange({
+      ...data,
+      education: [...data.education, { degree: '', school: '', year: '' }]
+    });
+  };
+
+  const updateEducation = (index: number, field: keyof ResumeData['education'][number], value: string) => {
+    const newEducation = [...data.education];
+    newEducation[index] = { ...newEducation[index], [field]: value };
+    onChange({ ...data, education: newEducation });
+  };
+
+  const removeEducation = (index: number) => {
+    const newEducation = data.education.filter((_, i) => i !== index);
+    onChange({ ...data, education: newEducation });
+  };
+
+  const addLanguage = () => {
+    onChange({ ...data, languages: [...data.languages, ''] });
+  };
+
+  const updateLanguage = (index: number, value: string) => {
+    const newLanguages = [...data.languages];
+    newLanguages[index] = value;
+    onChange({ ...data, languages: newLanguages });
+  };
+
+  const removeLanguage = (index: number) => {
+    const newLanguages = data.languages.filter((_, i) => i !== index);
+    onChange({ ...data, languages: newLanguages });
   };
 
   // Common input classes
@@ -93,6 +125,24 @@ export const FormEditor: React.FC<Props> = ({ data, onChange }) => {
               type="text" 
               value={data.personalInfo.phone} 
               onChange={(e) => updateInfo('phone', e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Location</label>
+            <input
+              type="text"
+              value={data.personalInfo.location}
+              onChange={(e) => updateInfo('location', e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Website</label>
+            <input
+              type="url"
+              value={data.personalInfo.website || ''}
+              onChange={(e) => updateInfo('website', e.target.value)}
               className={inputClass}
             />
           </div>
@@ -173,6 +223,71 @@ export const FormEditor: React.FC<Props> = ({ data, onChange }) => {
                 placeholder="Skill..."
               />
               <button onClick={() => removeSkill(index)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Education */}
+      <section className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-brand-900 dark:text-brand-100">Education</h3>
+          <button onClick={addEducation} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-slate-700 p-2 rounded flex items-center gap-1 font-medium">
+            <Plus size={16} /> Add Education
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {data.education.map((edu, index) => (
+            <div key={index} className="relative p-4 bg-slate-50 dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+              <button onClick={() => removeEducation(index)} className="absolute top-2 right-2 text-slate-400 hover:text-red-500">
+                <Trash2 size={16} />
+              </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  placeholder="Degree"
+                  value={edu.degree}
+                  onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                  className={inputClass}
+                />
+                <input
+                  placeholder="School / University"
+                  value={edu.school}
+                  onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                  className={inputClass}
+                />
+                <input
+                  placeholder="Year"
+                  value={edu.year}
+                  onChange={(e) => updateEducation(index, 'year', e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Languages */}
+      <section className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-brand-900 dark:text-brand-100">Languages</h3>
+          <button onClick={addLanguage} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-slate-700 p-2 rounded flex items-center gap-1 font-medium">
+            <Plus size={16} /> Add Language
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {data.languages.map((language, index) => (
+            <div key={index} className="flex items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+              <input
+                value={language}
+                onChange={(e) => updateLanguage(index, e.target.value)}
+                className="bg-transparent p-2 outline-none text-sm w-32 text-slate-900 dark:text-white"
+                placeholder="Language..."
+              />
+              <button onClick={() => removeLanguage(index)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <Trash2 size={14} />
               </button>
             </div>

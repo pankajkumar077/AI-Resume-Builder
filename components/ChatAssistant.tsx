@@ -26,7 +26,7 @@ export const ChatAssistant: React.FC<Props> = ({ currentResume, onUpdateResume }
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (textOverride?: string, imageBase64?: string) => {
+  const handleSend = React.useCallback(async (textOverride?: string, imageBase64?: string) => {
     const textToSend = textOverride || input;
     if (!textToSend.trim() && !imageBase64) return;
 
@@ -42,38 +42,36 @@ export const ChatAssistant: React.FC<Props> = ({ currentResume, onUpdateResume }
     setIsProcessing(true);
 
     try {
-      // 1. Get conversational response
-      const chatResponseText = await generateChatResponse([...messages, userMsg]);
+      // Run both in parallel for better responsiveness
+      const [chatResponseText, extractionResult] = await Promise.all([
+        generateChatResponse([...messages, userMsg]),
+        generateResumeFromInput(currentResume, textToSend, imageBase64 ? [imageBase64] : [])
+      ]);
       
-      // 2. Try to extract structured data if the input seems informative
-      // We run this in parallel or after. Here, strict separation.
-      // We pass the *accumulated* context + new input to the extractor
-      // For simplicity in this demo, we just pass the current text + image
-      const { resume: updatedData } = await generateResumeFromInput(currentResume, textToSend, imageBase64 ? [imageBase64] : []);
-      
-      if (updatedData) {
-        onUpdateResume(updatedData);
+      if (extractionResult.resume && Object.keys(extractionResult.resume).length > 0) {
+        onUpdateResume(extractionResult.resume);
       }
 
       const aiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        text: chatResponseText || "I've updated your resume details.",
+        text: chatResponseText,
         timestamp: Date.now()
       };
       setMessages(prev => [...prev, aiMsg]);
 
     } catch (error) {
+      console.error("Chat Error:", error);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        text: "Sorry, I had trouble processing that. Please try again.",
+        text: "I'm having trouble connecting. Please check your internet or API key.",
         timestamp: Date.now()
       }]);
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [input, messages, currentResume, onUpdateResume]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
