@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS
+name: Enterprise CI/CD Pipeline
 
 on:
   push:
@@ -9,16 +9,17 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1                  # Set to your AWS region
-  ECR_REPOSITORY: ai-resume-builder      # Set to your Amazon ECR repository name
-  ECS_SERVICE: ai-resume-service         # Set to your Amazon ECS service name
-  ECS_CLUSTER: ai-resume-cluster         # Set to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: .aws/task-definition.json # Path to your task definition
-  CONTAINER_NAME: ai-resume-app          # Name of the container in the task definition
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: ai-resume-builder
+  ECS_SERVICE: ai-resume-service-prod
+  ECS_CLUSTER: ai-resume-cluster-prod
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: ai-resume-app
+  TF_WORKING_DIR: terraform
 
 jobs:
   test-and-lint:
-    name: Code Quality & Tests
+    name: Security Scan, Code Quality & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -33,11 +34,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # - name: Run Linter
-      #   run: npm run lint
-
-      # - name: Run Tests
-      #   run: npm run test
+      # - name: Run Linter & Tests
+      #   run: |
+      #     npm run lint
+      #     npm run test
 
       - name: Build Project
         run: npm run build
@@ -45,9 +45,47 @@ jobs:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
 
-  deploy:
-    name: Build & Deploy to AWS
+  terraform:
+    name: Provision Infrastructure (Terraform)
     needs: test-and-lint
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan
+
+  deploy:
+    name: Build & Deploy Container to ECS
+    needs: terraform
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
@@ -72,13 +110,14 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build a docker container and push it to ECR
           docker build \
             --build-arg VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }} \
             --build-arg VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition

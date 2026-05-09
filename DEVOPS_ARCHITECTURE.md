@@ -1,56 +1,61 @@
 # 🚀 Enterprise Cloud-Native AI Resume Builder
 
 ## 📌 Project Overview
-This repository contains a production-ready, cloud-native React application powered by AI (Gemini/OpenAI) for building ATS-friendly resumes. The project has been completely overhauled with industry-standard **DevOps and Cloud Engineering** best practices, making it highly scalable, secure, and automated.
+This repository contains a production-ready, cloud-native React application powered by AI (Gemini/OpenAI) for building ATS-friendly resumes. This project acts as a definitive showcase of **Senior Cloud & DevOps Architecture**, built identically to a real-world enterprise SaaS product.
 
 ---
 
-## 🏗️ Cloud & DevOps Architecture
+## 🏗️ Production Architecture
 
-### 1. Dockerization & Containerization
-- **Multi-Stage Builds:** The application utilizes a multi-stage `Dockerfile` to dramatically reduce the final image size and enhance security.
-  - **Stage 1 (Builder):** Uses `node:20-alpine` to cleanly install dependencies and compile the React/Vite source code.
-  - **Stage 2 (Production):** Uses an ultra-lightweight `nginx:alpine` image to serve the compiled static files.
-- **Docker Compose:** A `docker-compose.yml` file is provided for local deployment simulation, complete with health checks and network isolation.
+The infrastructure is provisioned entirely using **Terraform** and follows a highly available, secure, and scalable AWS deployment model.
 
-### 2. AWS Infrastructure Deployment
-The project is designed to be deployed on **AWS Elastic Container Service (ECS) with AWS Fargate** for serverless container management.
+### **Traffic Flow:**
+`Users` ➔ `Route53 (DNS)` ➔ `CloudFront (CDN + Caching)` ➔ `AWS WAF (Security)` ➔ `ALB (Load Balancer)` ➔ `ECS Fargate (Containers)` ➔ `S3 (Storage) / Secrets Manager`
 
-- **Amazon ECR (Elastic Container Registry):** securely stores the versioned Docker images.
-- **Amazon ECS (Fargate):** Runs the frontend application securely without managing underlying EC2 instances.
-- **Application Load Balancer (ALB):** Distributes incoming traffic across multiple Fargate tasks.
-- **Amazon CloudFront & S3 (Optional Alternative):** The architecture also supports hosting the static build artifacts directly on S3 and serving via CloudFront CDN for global edge-caching.
-- **Route53:** Manages DNS routing to the ALB or CloudFront distribution.
+### 1. Infrastructure as Code (Terraform)
+All infrastructure resides in the `/terraform` directory, structured modularly:
+- **`vpc.tf`**: Provisions a custom VPC with public and private subnets across multiple Availability Zones, ensuring network isolation. Includes NAT Gateways for private subnet outbound access.
+- **`ecs.tf`**: Sets up the Amazon ECS Cluster utilizing AWS Fargate (Serverless compute), eliminating EC2 instance management overhead. Includes auto-scaling policies based on CPU utilization.
+- **`alb.tf`**: Configures the Application Load Balancer to distribute traffic to ECS tasks, performing constant health checks on the `/health` endpoint.
+- **`route53_acm.tf`**: Manages the custom domain (`airesumebuilder.dev`) and provisions free, auto-renewing SSL certificates via AWS ACM for strict HTTPS enforcement.
+- **`waf.tf`**: Protects the application using AWS WAF. Includes rate limiting (mitigates DDoS) and the AWS Managed Core Rule Set to block SQLi, XSS, and bad bots.
+- **`s3_cloudfront.tf`**: Amazon S3 is used to host static assets, fronted by CloudFront for edge caching, reducing latency globally. Origin Access Control (OAC) secures S3 from direct public access.
+- **`iam.tf`**: Implements the principle of least privilege. Grants ECS tasks specific permissions to read API keys from AWS Secrets Manager and interact with S3.
 
-### 3. CI/CD Pipeline (GitHub Actions)
-A robust Continuous Integration and Continuous Deployment (CI/CD) pipeline is configured in `.github/workflows/deploy.yml`.
+### 2. Containerization (Docker)
+- **Multi-Stage Build (`Dockerfile`):**
+  - **Stage 1 (Builder):** Uses `node:20-alpine` to cleanly install dependencies and compile the React code.
+  - **Stage 2 (Production):** Uses an ultra-lightweight `nginx:1.25-alpine` image. Removes all source code and build tools, drastically minimizing the attack surface.
+- **Nginx Reverse Proxy (`nginx/nginx.conf`):**
+  - Configures crucial security headers (`Strict-Transport-Security`, `X-Frame-Options`, `X-XSS-Protection`).
+  - Enforces aggressive caching for static assets while enforcing no-cache on the entry `index.html`.
+  - Enables GZIP compression to minimize payload size.
 
-**Pipeline Flow:**
-1. **Trigger:** Code pushed to `main` branch.
-2. **Code Quality:** Provisions a Node.js environment, installs dependencies cleanly (`npm ci`), and prepares for testing/linting.
-3. **Build:** Compiles the application, securely injecting AI API keys via GitHub Secrets.
-4. **Authenticate:** Securely logs into AWS using IAM Least Privilege roles via `aws-actions/configure-aws-credentials`.
-5. **Container Registry:** Builds the Docker image, tags it with the Git commit SHA, and pushes it to AWS ECR.
-6. **Task Definition Update:** Dynamically updates the ECS task definition with the newly built ECR image.
-7. **Zero-Downtime Deployment:** Deploys the updated task to the ECS Cluster, waiting for stability to ensure zero downtime.
+### 3. Enterprise CI/CD Pipeline (GitHub Actions)
+The deployment is fully automated via `.github/workflows/deploy.yml`.
 
-### 4. Security & Optimization
-- **Nginx Reverse Proxy (`nginx.conf`):**
-  - **Security Headers:** Implements `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security` (HSTS), and `Referrer-Policy`.
-  - **Hidden Files Protection:** Blocks access to `.env` and `.git` files.
-- **Gzip Compression:** enabled for text, CSS, JS, and JSON files to drastically reduce payload sizes and improve load times.
-- **Caching Strategy:**
-  - Static assets (images, CSS, JS) are cached aggressively (1 year) with `immutable` tags.
-  - `index.html` is strictly prevented from caching (`no-store`, `no-cache`) to ensure users instantly receive updates when a new deployment occurs.
-- **Secret Management:** Sensitive AI keys are managed via GitHub Secrets and injected only at build time. No secrets are committed to the repository.
+**Pipeline Stages:**
+1. **`test-and-lint`**: Checks out the code, sets up Node.js, installs dependencies cleanly, and performs the production build.
+2. **`terraform`**: Automatically provisions/updates the AWS infrastructure based on changes to `.tf` files. Uses S3 backend for remote state and DynamoDB for state locking.
+3. **`deploy`**: Logs into AWS via IAM roles, builds the Docker image, tags it with the commit SHA, pushes it to AWS ECR, and forces an ECS deployment using the new task definition, guaranteeing **Zero-Downtime Deployments**.
 
-### 5. Monitoring & Logging
-- **Health Checks:** A dedicated `/health` endpoint is configured in Nginx to allow AWS ALB to monitor container health and automatically replace failing instances.
-- **AWS CloudWatch:** ECS tasks are configured to stream logs directly to CloudWatch log groups (`/ecs/ai-resume-app`) for centralized monitoring and alerting.
+### 4. Security Implementation
+- **AWS Secrets Manager:** Sensitive AI API keys are stored securely in AWS Secrets Manager and injected dynamically into containers at runtime, completely avoiding `.env` leaks.
+- **Network Security:** ECS tasks run in **Private Subnets**; they are inaccessible from the public internet and can only receive traffic from the ALB.
+- **WAF:** Configured with rate-limiting and core security rules at the edge (CloudFront).
 
 ---
 
-## 🛠️ How to Deploy
+## 🛠️ Deployment Guide
+
+### Prerequisites
+1. **AWS Account** with administrative privileges.
+2. **Terraform** CLI installed locally (v1.5+).
+3. **GitHub Repository** with the following secrets configured:
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `VITE_GEMINI_API_KEY`
+   - `VITE_OPENAI_API_KEY`
 
 ### Local Testing
 ```bash
@@ -58,19 +63,21 @@ A robust Continuous Integration and Continuous Deployment (CI/CD) pipeline is co
 docker-compose up --build -d
 
 # Verify health status
-docker ps
+curl http://localhost:8080/health
 ```
 
-### AWS Setup Prerequisites
-1. **Create an ECR Repository** named `ai-resume-builder`.
-2. **Create an ECS Cluster** and a Fargate Service.
-3. **Configure GitHub Secrets:**
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `VITE_GEMINI_API_KEY`
-   - `VITE_OPENAI_API_KEY`
-4. Push to the `main` branch to trigger the automated deployment.
+### Manual Terraform Provisioning
+If you prefer not to use the automated pipeline for the initial setup:
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply -auto-approve
+```
+
+### CI/CD Deployment
+Simply push your code to the `main` branch. GitHub Actions will handle the Terraform planning, container building, ECR pushing, and ECS deployment automatically.
 
 ---
 
-*This architecture demonstrates a deep understanding of container orchestration, automated delivery, web security, and cloud-native design principles.*
+*Architected and developed as a demonstration of Senior DevOps engineering capabilities, focusing on AWS native services, infrastructure as code, container orchestration, and highly available architectures.*
