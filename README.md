@@ -1,69 +1,95 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2a6c0141-2f75-4965-ab8b-fad85df16cc9" />🤖 AI Resume Builder
+# 🚀 BharatResume: AI-Powered Universal Resume Builder
 
-An intelligent web application that helps users create professional, ATS-friendly resumes using AI. This project leverages modern web technologies and AI APIs to generate optimized resumes based on user input and job descriptions.
+**BharatResume** is a production-ready, cloud-native SaaS application designed to help job seekers create professional, ATS-friendly resumes in minutes. Powered by advanced AI (Gemini/OpenAI), it supports voice commands, image extraction, and real-time template switching.
 
-🚀 Features
-🔐 User Authentication (Login/Signup)
-🧠 AI-powered resume generation
-📄 ATS-friendly resume templates
-✏️ Edit and customize resume sections
-📥 Download resume (PDF format)
-🎯 Job description-based optimization
-🌐 Responsive UI
-🛠️ Tech Stack
-Frontend: React.js, Tailwind CSS
-Backend: Node.js, Express.js
-AI Integration: Google Gemini API
-Database: MongoDB (if used)
-⚙️ Installation & Setup
+---
 
-Follow these steps to run the project locally:
+## ✨ Key Features
 
+### 🤖 Intelligent AI Assistant ("Sahayak")
+- **Dual AI Core**: Support for both Google Gemini 1.5 Flash and OpenAI GPT-4o-mini.
+- **Voice-to-Resume**: Build your entire resume just by speaking (supports English and Hinglish).
+- **Multimodal Extraction**: Upload a photo of an old resume, and the AI will extract all details automatically.
+- **Smart Fallback**: Built-in regex parsing ensures functionality even when AI quotas are exceeded.
 
-# Navigate to project folder
-cd ai-resume-builder
+### 🎨 Professional Resume Templates
+- **Modern**: Clean, two-column layout with professional blue accents.
+- **Classic**: Traditional serif layout, ideal for formal and academic roles.
+- **Minimalist**: Sleek design focused on typography and white space.
+- **Professional**: High-impact side-bar layout for experienced professionals.
+- **Real-time Switching**: Change templates instantly without losing your data.
 
-# Install dependencies
-npm install
+### 🔐 Enterprise-Grade Security & UI
+- **Secure Authentication**: Integrated Login/Signup system with user state management.
+- **Privacy First**: Local storage persistence and secure API key handling via AWS Secrets Manager.
+- **Smooth UX**: Optimized manual editor with zero-focus-loss typing.
+- **PDF Export**: High-fidelity, A4-optimized PDF downloads.
 
-# Create .env.local file and add your API key
-GEMINI_API_KEY=your_api_key_here
+---
 
-# Run the development server
-npm run dev
+## 🏗️ Cloud & DevOps Architecture (AWS)
 
+This project is architected as a definitive showcase of **Senior Cloud & DevOps Architecture**, utilizing Infrastructure as Code (IaC) and automated delivery.
 
-📸 Screenshots 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/0c107fec-2aad-4155-a9aa-4069bd841812" />
+- **Infrastructure as Code**: Fully provisioned via **Terraform** (VPC, Subnets, NAT Gateways).
+- **Container Orchestration**: **Amazon ECS on AWS Fargate** for serverless, scalable container management.
+- **Global Delivery**: **Amazon CloudFront CDN** with **S3** origin for static asset edge-caching.
+- **Security at Edge**: **AWS WAF** integrated with CloudFront for rate limiting and core rule protection (SQLi, XSS).
+- **CI/CD Pipeline**: Enterprise **GitHub Actions** workflow for automated testing, Terraform provisioning, and zero-downtime ECS deployments.
+- **Observability**: **CloudWatch Logs** aggregation for container health and application monitoring.
 
+---
 
-📌 Usage
+## 🛠️ Tech Stack
 
-Enter your details (education, skills, experience)
-Generate AI-based resume
-Edit and download your resume
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Lucide Icons.
+- **AI**: Google Gemini SDK, OpenAI SDK.
+- **Cloud**: AWS (ECS, ECR, ALB, CloudFront, S3, Route53, WAF, Secrets Manager).
+- **DevOps**: Docker, Terraform, GitHub Actions, Nginx.
 
-🔮 Future Improvements
+---
 
-Multiple resume templates
-Real-time preview
-LinkedIn profile import
-AI suggestions for skills & projects
-Resume scoring system
+## 🚀 Getting Started
 
-🤝 Contributing
+### Local Development
 
-Contributions are welcome! Feel free to fork this repo and submit a pull request.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/pankajkumar077/AI-Resume-Builder.git
+   cd AI-Resume-Builder
+   ```
 
+2. **Setup environment variables**:
+   Create a `.env` file in the root:
+   ```env
+   VITE_GEMINI_API_KEY=your_key_here
+   VITE_OPENAI_API_KEY=your_key_here
+   ```
 
-👨‍💻 Author
+3. **Install and Run**:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-Anshik Patel
+### Docker Deployment (Local)
+```bash
+docker-compose up --build
+```
 
-Note:
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 📄 Documentation
+- [DevOps & Architecture Details](./DEVOPS_ARCHITECTURE.md)
+- [Environment Configuration](./.env.example)
+
+---
+
+## 🤝 Contribution
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## ⚖️ License
+This project is licensed under the MIT License.
+
+---
+*Developed with ❤️ as a showcase of Software Engineering and Cloud Excellence.*
