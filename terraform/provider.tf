@@ -26,3 +26,17 @@ provider "aws" {
     }
   }
 }
+
+# Secondary provider for us-east-1 (Required for ACM certificates used by CloudFront)
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+  
+  default_tags {
+    tags = {
+      Project     = "AI-Resume-Builder"
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
+}

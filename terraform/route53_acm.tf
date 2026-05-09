@@ -4,14 +4,12 @@ data "aws_route53_zone" "main" {
   private_zone = false
 }
 
-# ACM Certificate for HTTPS
+# ACM Certificate for HTTPS (Must be in us-east-1 for CloudFront)
 resource "aws_acm_certificate" "domain_cert" {
+  provider                  = aws.us_east_1
   domain_name               = var.domain_name
   subject_alternative_names = ["*.${var.domain_name}"]
   validation_method         = "DNS"
-
-  # CloudFront requires certificates to be in us-east-1
-  # This block assumes the provider is already set to us-east-1
   
   lifecycle {
     create_before_destroy = true

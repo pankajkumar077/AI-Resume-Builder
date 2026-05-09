@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ap-south-1
   ECR_REPOSITORY: ai-resume-builder
   ECS_SERVICE: ai-resume-service-prod
   ECS_CLUSTER: ai-resume-cluster-prod
