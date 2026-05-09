@@ -443,7 +443,7 @@ const EditorLayout = ({
       </div>
     </header>
 
-    <div className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex">
+    <div id="mobile-tab-bar" className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex">
       <button onClick={() => setMobileTab('editor')} className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 ${mobileTab === 'editor' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500'}`}><PenTool size={16} /> Editor</button>
       <button onClick={() => setMobileTab('preview')} className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 ${mobileTab === 'preview' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500'}`}><Eye size={16} /> Preview</button>
     </div>
@@ -467,7 +467,7 @@ const EditorLayout = ({
           <div className="p-8 text-center text-slate-500 mt-10"><Layout size={48} className="mx-auto mb-4 text-slate-300" /><p>Editor tools are disabled in shared view.</p></div>
         )}
       </div>
-      <div className={`bg-slate-200/80 dark:bg-slate-950 md:flex-1 flex flex-col items-center relative ${mobileTab === 'editor' ? 'hidden md:flex' : 'flex'} overflow-y-auto h-full`}>
+      <div id="resume-preview-scroll-container" className={`bg-slate-200/80 dark:bg-slate-950 md:flex-1 flex flex-col items-center relative ${mobileTab === 'editor' ? 'hidden md:flex' : 'flex'} overflow-y-auto h-full`}>
            <div className="w-full max-w-[210mm] py-8 md:py-10 px-4 transition-transform duration-300 origin-top">
               <div id="resume-preview-container" className="bg-white shadow-2xl mx-auto">
                 <ResumePreview data={currentResume} />
