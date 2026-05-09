@@ -25,7 +25,11 @@ import {
   Mic,
   Cpu,
   Moon,
-  Sun
+  Sun,
+  User,
+  Lock,
+  Mail,
+  ArrowRight
 } from 'lucide-react';
 
 const EMPTY_RESUME: ResumeData = {
@@ -149,14 +153,17 @@ const ShareModal = ({ show, onClose, shareUrl, copied, onCopy }: any) => {
   );
 };
 
-const Dashboard = ({ onToggleTheme, isDarkMode, onCreateNew, onViewTemplates, resumes, onSelectResume }: any) => (
+const Dashboard = ({ 
+  onToggleTheme, isDarkMode, onCreateNew, onViewTemplates, resumes, onSelectResume,
+  isAuthenticated, user, onLogin, onSignup, onLogout 
+}: any) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
     <div className="bg-brand-950 text-white relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-brand-800/30 rounded-full blur-[120px]"></div>
         <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-indigo-900/40 rounded-full blur-[100px]"></div>
       </div>
-      <div className="max-w-6xl mx-auto px-6 pt-20 pb-32 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 pt-10 pb-32 relative z-10">
         <nav className="flex justify-between items-center mb-16">
            <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
              <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
@@ -164,9 +171,46 @@ const Dashboard = ({ onToggleTheme, isDarkMode, onCreateNew, onViewTemplates, re
              </div>
              BharatResume
            </div>
-           <button onClick={onToggleTheme} className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors">
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-           </button>
+           
+           <div className="flex items-center gap-4">
+             <button onClick={onToggleTheme} className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors">
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+             </button>
+             
+             {!isAuthenticated ? (
+               <div className="flex items-center gap-2">
+                 <button 
+                   onClick={onLogin}
+                   className="px-5 py-2 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition-all"
+                 >
+                   Log In
+                 </button>
+                 <button 
+                   onClick={onSignup}
+                   className="px-5 py-2 rounded-xl text-sm font-bold bg-white text-brand-950 hover:bg-brand-50 transition-all shadow-lg"
+                 >
+                   Sign Up
+                 </button>
+               </div>
+             ) : (
+               <div className="flex items-center gap-3">
+                 <div className="hidden sm:flex flex-col items-end">
+                    <span className="text-sm font-bold">{user?.name}</span>
+                    <span className="text-[10px] opacity-60">{user?.email}</span>
+                 </div>
+                 <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold border-2 border-white/20 shadow-lg">
+                    {user?.name?.charAt(0)}
+                 </div>
+                 <button 
+                   onClick={onLogout}
+                   className="p-2 text-white/60 hover:text-white transition-colors"
+                   title="Logout"
+                 >
+                   <X size={20} />
+                 </button>
+               </div>
+             )}
+           </div>
         </nav>
         <div className="flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1 text-center md:text-left">
@@ -272,6 +316,114 @@ const TemplatesView = ({ onBack, onSelectTemplate }: any) => (
   </div>
 );
 
+const AuthModal = ({ show, mode, onClose, onSwitchMode, onAuthSuccess }: any) => {
+  if (!show) return null;
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Mock authentication
+    setTimeout(() => {
+      setIsLoading(false);
+      onAuthSuccess({ name: name || 'User', email });
+      onClose();
+    }, 1500);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-8 relative border border-slate-200 dark:border-slate-700">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-2 rounded-full transition-all"
+        >
+          <X size={20} />
+        </button>
+        
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-100 dark:border-brand-800">
+            {mode === 'login' ? <Lock size={32} /> : <User size={32} />}
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">
+            {mode === 'login' ? 'Login to access your resumes' : 'Join thousands of job seekers today'}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === 'signup' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type="text" required
+                  value={name} onChange={(e) => setName(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all dark:text-white"
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="email" required
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all dark:text-white"
+                placeholder="name@example.com"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="password" required
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all dark:text-white"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" disabled={isLoading}
+            className="w-full bg-brand-600 hover:bg-brand-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-brand-600/20 transition-all flex items-center justify-center gap-2"
+          >
+            {isLoading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> : (
+              <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight size={20} /></>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-slate-500 dark:text-slate-400">
+            {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
+            <button 
+              onClick={onSwitchMode}
+              className="ml-2 text-brand-600 dark:text-brand-400 font-bold hover:underline"
+            >
+              {mode === 'login' ? 'Sign Up' : 'Log In'}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditorLayout = ({ 
   currentResume, setView, onToggleTheme, isDarkMode, isSharedView, setShowShareModal, handlePrint, 
   mobileTab, setMobileTab, handleUpdateResume 
@@ -330,6 +482,10 @@ function App() {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [currentResume, setCurrentResume] = useState<ResumeData>(EMPTY_RESUME);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [resumes, setResumes] = useState<ResumeData[]>([]);
   const [copied, setCopied] = useState(false);
   const [isSharedView, setIsSharedView] = useState(false);
@@ -411,6 +567,10 @@ function App() {
           onToggleTheme={toggleTheme} isDarkMode={isDarkMode} 
           onCreateNew={handleCreateNew} onViewTemplates={() => setView(AppView.TEMPLATES)}
           resumes={resumes} onSelectResume={(r: any) => { setCurrentResume(r); setView(AppView.EDITOR); }}
+          isAuthenticated={isAuthenticated} user={user}
+          onLogin={() => { setAuthMode('login'); setShowAuthModal(true); }}
+          onSignup={() => { setAuthMode('signup'); setShowAuthModal(true); }}
+          onLogout={() => { setIsAuthenticated(false); setUser(null); }}
         />
       )}
       {view === AppView.TEMPLATES && (
@@ -430,6 +590,12 @@ function App() {
       <ShareModal 
         show={showShareModal} onClose={() => setShowShareModal(false)} shareUrl={shareUrl}
         copied={copied} onCopy={() => { navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      />
+      <AuthModal 
+        show={showAuthModal} mode={authMode} 
+        onClose={() => setShowAuthModal(false)} 
+        onSwitchMode={() => setAuthMode(prev => prev === 'login' ? 'signup' : 'login')}
+        onAuthSuccess={(userData: any) => { setIsAuthenticated(true); setUser(userData); }}
       />
     </>
   );
