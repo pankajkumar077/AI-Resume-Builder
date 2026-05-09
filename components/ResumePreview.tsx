@@ -111,11 +111,11 @@ const ModernTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
 const ClassicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personalInfo, experience, education, skills, languages } = data;
   return (
-    <div className="p-10 font-serif">
+    <div className="p-10 font-serif text-slate-900">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">{personalInfo.fullName || 'Your Name'}</h1>
-        <div className="flex justify-center flex-wrap gap-3 text-sm text-slate-600 italic">
+        <div className="flex justify-center flex-wrap gap-3 text-sm text-slate-700 italic">
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>• {personalInfo.phone}</span>}
           {personalInfo.location && <span>• {personalInfo.location}</span>}
@@ -125,23 +125,23 @@ const ClassicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
       {/* Summary */}
       {personalInfo.summary && (
         <div className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest border-b border-slate-800 mb-3">Objective</h2>
-          <p className="text-sm text-slate-700 leading-relaxed">{personalInfo.summary}</p>
+          <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-900 mb-3 text-slate-900">Objective</h2>
+          <p className="text-sm text-slate-800 leading-relaxed">{personalInfo.summary}</p>
         </div>
       )}
 
       {/* Experience */}
       <div className="mb-8">
-        <h2 className="text-sm font-bold uppercase tracking-widest border-b border-slate-800 mb-4">Professional Experience</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-900 mb-4 text-slate-900">Professional Experience</h2>
         <div className="space-y-6">
           {experience.map((job, index) => (
             <div key={index}>
-              <div className="flex justify-between font-bold text-sm">
+              <div className="flex justify-between font-bold text-sm text-slate-900">
                 <span>{job.company}</span>
                 <span>{job.duration}</span>
               </div>
-              <div className="italic text-sm mb-2">{job.role}</div>
-              <p className="text-sm text-slate-700 whitespace-pre-line leading-snug">{job.description}</p>
+              <div className="italic text-sm mb-2 text-slate-700">{job.role}</div>
+              <p className="text-sm text-slate-800 whitespace-pre-line leading-snug">{job.description}</p>
             </div>
           ))}
         </div>
@@ -149,12 +149,12 @@ const ClassicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
 
       {/* Education */}
       <div className="mb-8">
-        <h2 className="text-sm font-bold uppercase tracking-widest border-b border-slate-800 mb-4">Education</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-900 mb-4 text-slate-900">Education</h2>
         <div className="space-y-3">
           {education.map((edu, index) => (
-            <div key={index} className="flex justify-between text-sm">
+            <div key={index} className="flex justify-between text-sm text-slate-800">
               <div>
-                <span className="font-bold">{edu.school}</span>, {edu.degree}
+                <span className="font-bold text-slate-900">{edu.school}</span>, {edu.degree}
               </div>
               <span>{edu.year}</span>
             </div>
@@ -165,12 +165,12 @@ const ClassicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
       {/* Skills & Languages */}
       <div className="grid grid-cols-2 gap-8">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-widest border-b border-slate-800 mb-3">Skills</h2>
-          <p className="text-sm text-slate-700">{skills.join(', ')}</p>
+          <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-900 mb-3 text-slate-900">Skills</h2>
+          <p className="text-sm text-slate-800">{skills.join(', ')}</p>
         </div>
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-widest border-b border-slate-800 mb-3">Languages</h2>
-          <p className="text-sm text-slate-700">{languages.join(', ')}</p>
+          <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-900 mb-3 text-slate-900">Languages</h2>
+          <p className="text-sm text-slate-800">{languages.join(', ')}</p>
         </div>
       </div>
     </div>
