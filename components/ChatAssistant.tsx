@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Image as ImageIcon, Loader2, Bot, User } from 'lucide-react';
-import { generateResumeFromInput, generateChatResponse } from '../services/geminiService';
+import { assistantRequest } from '../services/geminiService';
 import { ResumeData, ChatMessage } from '../types';
 import { VoiceRecorder } from './VoiceRecorder';
 
@@ -42,20 +42,21 @@ export const ChatAssistant: React.FC<Props> = ({ currentResume, onUpdateResume }
     setIsProcessing(true);
 
     try {
-      // Run both in parallel for better responsiveness
-      const [chatResponseText, extractionResult] = await Promise.all([
-        generateChatResponse([...messages, userMsg]),
-        generateResumeFromInput(currentResume, textToSend, imageBase64 ? [imageBase64] : [])
-      ]);
-      
-      if (extractionResult.resume && Object.keys(extractionResult.resume).length > 0) {
-        onUpdateResume(extractionResult.resume);
+      const assistantResult = await assistantRequest(
+        [...messages, userMsg],
+        currentResume,
+        textToSend,
+        imageBase64 ? [imageBase64] : []
+      );
+
+      if (assistantResult.resume && Object.keys(assistantResult.resume).length > 0) {
+        onUpdateResume(assistantResult.resume);
       }
 
       const aiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        text: chatResponseText,
+        text: assistantResult.chatResponse,
         timestamp: Date.now()
       };
       setMessages(prev => [...prev, aiMsg]);

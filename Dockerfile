@@ -13,36 +13,24 @@ RUN npm ci
 COPY . .
 
 # Build the application for production
-# Build args can be passed for environment variables if needed
-ARG VITE_GEMINI_API_KEY
-ARG VITE_OPENAI_API_KEY
-ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
-ENV VITE_OPENAI_API_KEY=$VITE_OPENAI_API_KEY
-
 RUN npm run build
+RUN npm prune --production
 
-# Stage 2: Serve the application with Nginx
-FROM nginx:1.25-alpine
+# Stage 2: Run the app with Node.js
+FROM node:20-alpine
 
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
 
-# Copy custom Nginx configuration
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+RUN apk add --no-cache wget
 
-# Copy built assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server.js ./server.js
 
-# Ensure correct permissions for nginx user
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
+EXPOSE 3000
 
-# Expose port 80
-EXPOSE 80
-
-# Healthcheck to verify Nginx is serving traffic
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost/health || exit 1
+  CMD wget -qO- http://localhost:3000/health >/dev/null || exit 1
 
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]

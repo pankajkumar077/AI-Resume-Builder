@@ -74,8 +74,17 @@ This project is architected as a definitive showcase of **Senior Cloud & DevOps 
 2. **Setup environment variables**:
    Create a `.env` file in the root:
    ```env
-   VITE_GEMINI_API_KEY=your_key_here
-   VITE_OPENAI_API_KEY=your_key_here
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   VITE_OPENAI_API_KEY=your_openai_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+   For local backend development, the server reads these values at runtime.
+
+3. Run the backend server and frontend separately if needed:
+   ```bash
+   npm run dev:server
+   npm run dev
    ```
 
 3. **Install and Run**:
@@ -84,7 +93,9 @@ This project is architected as a definitive showcase of **Senior Cloud & DevOps 
    npm run dev
    ```
 
-### Docker Deployment (Local)
+### Docker Deployment (Optional Local Test)
+You do not have to deploy locally. This section is only for optional local validation.
+
 ```bash
 docker-compose up --build
 ```
