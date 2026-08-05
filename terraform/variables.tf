@@ -13,7 +13,7 @@ variable "environment" {
 variable "domain_name" {
   description = "Custom domain name for the application"
   type        = string
-  default     = "airesumebuilder.dev" # Replace with actual domain
+  default     = "ai-resume-builder-one-snowy.vercel.app/" # Replace with actual domain
 }
 
 variable "container_port" {
