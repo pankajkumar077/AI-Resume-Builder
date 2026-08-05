@@ -1,5 +1,6 @@
 # AWS WAFv2 Web ACL for CloudFront
 resource "aws_wafv2_web_acl" "main" {
+  provider    = aws.us_east_1
   name        = "ai-resume-waf-${var.environment}"
   description = "WAF rules for AI Resume Builder"
   scope       = "CLOUDFRONT"
