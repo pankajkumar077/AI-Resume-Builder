@@ -40,7 +40,6 @@ resource "aws_cloudfront_distribution" "main" {
   enabled             = true
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100" # Use only NA and Europe to save costs
-  aliases             = [var.domain_name, "www.${var.domain_name}"]
   web_acl_id          = aws_wafv2_web_acl.main.arn # Attach WAF
 
   # Origin 1: ALB (Dynamic API / App logic)
@@ -110,11 +109,6 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
-  viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.domain_cert.arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
-  }
 }
 
 # Bucket policy to allow CloudFront to read static assets

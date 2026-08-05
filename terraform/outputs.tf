@@ -13,7 +13,3 @@ output "ecr_repository_url" {
   value       = aws_ecr_repository.app_repo.repository_url
 }
 
-output "nameservers" {
-  description = "Nameservers for the Route 53 zone"
-  value       = data.aws_route53_zone.main.name_servers
-}
