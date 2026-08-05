@@ -45,20 +45,16 @@ resource "aws_lb_target_group" "app_tg" {
   }
 }
 
-# Redirect HTTP to HTTPS
+# HTTP listener forwarding traffic to ECS target group
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
+    type = "forward"
 
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
 

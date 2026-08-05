@@ -50,7 +50,7 @@ resource "aws_cloudfront_distribution" "main" {
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "https-only"
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
@@ -80,6 +80,10 @@ resource "aws_cloudfront_distribution" "main" {
     min_ttl                = 0
     default_ttl            = 0
     max_ttl                = 0
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
   }
 
   # Cache Behavior for Static Assets (Route to S3 for performance)
